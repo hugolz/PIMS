@@ -89,6 +89,16 @@ impl Window {
     pub fn main_ui(&mut self, ui: &mut egui::Ui, main_rect: egui::Rect, egctx: &egui::Context) {
         let main_rect = ui
             .allocate_ui_at_rect(main_rect, |ui| {
+                if let Some(data) =&mut self.dll_data{
+                    centered(ui, |ui|{
+                        ui.label(format!("Injected in {}", self.target_process_temp));
+
+
+                    });
+
+                    return;
+                }
+
                 ui.horizontal(|ui| {
                     ui.label("Target process: ");
                     ui.text_edit_singleline(&mut self.target_process_temp);
@@ -181,6 +191,14 @@ impl Window {
         // let title_size = 100;
 
         // ui.put(egui::Rect::from_min_size(egui::pos2(0., 0.), egui::vec2(100., 100.)), );
+
+        if scan_info.progress.0 != scan_info.progress.1 {
+            ui.label(format!(
+                "Scanning {} / {}",
+                scan_info.progress.0, scan_info.progress.1
+            ));
+            // return;
+        }
         ui.label(format!(
             "Found {} addreses: ",
             scan_info.found_addresses.len()

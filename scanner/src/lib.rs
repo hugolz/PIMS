@@ -56,8 +56,8 @@ extern "system" fn DllMain(dll_module: HINSTANCE, call_reason: u32, lpv_reserved
                 socket_send(PayloadMessage::Boot);
                 start();
                 println!("Thread has exited");
-                free_library();
-                cleanup();
+                free_library(); // This completely stops the dll, anything after is not called
+                // cleanup();
             });
         }
         DLL_PROCESS_DETACH => {
@@ -102,7 +102,8 @@ fn start() {
                         progress: (index + 1, regions.len()),
                         value_size_b: params.value.len() as u8,
                         found_addresses: addresses.clone(),
-                    }))
+                    }));
+                    std::thread::sleep(std::time::Duration::from_secs_f32(0.005));
                 }
                 println!("SCAN END");
             }
@@ -186,13 +187,13 @@ fn read(base: *const u8, size: u8) {
 }
 
 fn free_library() {
-    unsafe {
+    println!("Freeing lib..");
+    unsafe { // Calling this, stops the execution of the function
         winapi::um::libloaderapi::FreeLibraryAndExitThread(
             SCANNER_MODULE.unwrap(/*it's fine to panic, it should never occur anyway*/),
             0,
         )
     };
-    println!("Scanner lib has been freed");
 }
 
 fn cleanup() {
